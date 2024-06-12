@@ -1,2 +1,2 @@
 # other-BI-projects
-various small excel projects for my learning
+various Power BI projects for my learning
