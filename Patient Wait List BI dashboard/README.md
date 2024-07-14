@@ -1,5 +1,5 @@
 # Patient Wait List BI dashboard 
-![waitlist](https://github.com/user-attachments/assets/1a0b08d9-2c22-4ad7-8830-871779a1196d)
+### ![waitlist](https://github.com/user-attachments/assets/1a0b08d9-2c22-4ad7-8830-871779a1196d)
 
 ## Overall Objectives
 ### Project goals
