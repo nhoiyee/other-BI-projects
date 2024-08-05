@@ -1,0 +1,36 @@
+DAX formula used
+-----------------
+
+table tool, new table
+dates = CALENDAR(DATE(YEAR(MIN(Sales[Date])),1,1), 
+DATE(YEAR(MAX(Sales[Date])),12,31))
+
+year = YEAR(dates[Date])
+
+monthNumber =month(dates[Date])
+
+monthName =format(dates[Date],"MMM") 4 M- complete mth
+
+day=day(dates[Date])
+weekdayNumber=  weekday(dates[Date], 2) Mon is 1
+
+weekdayName= format(dates[Date],"DDD")
+
+isWeekend =if (dates[weekdayNumber]>5,"yes","no")
+
+totalRevenue = SUM(Sales[Amount])
+
+noOfOrders=countrow(sales)
+
+totalRevWeekend= CALCULATE(Sales[totalRevenue], dates[isWeekend]="yes")
+
+totalRevNotWeekend=
+CALCULATE(Sales[totalRevenue], dates[isWeekend]="no")
+
+totalRevPrevYear=CALCULATE([totalRevenue],
+SAMEPERIODLASTYEAR(dates[Date]))
+
+totalRevYearDiff= [totalRevenue]- [totalRevPrevYear]
+
+%totalRevYearDiff=divide(totalRevYearDiff,totalRevPrevYear,0)
+
