@@ -1,0 +1,128 @@
+key measures
+--------------
+
+GS $ = SUM(fact_Actual_Estimates[gross_sales_amount])
+
+NIS $ = SUM(fact_Actual_Estimates[net_invoice_sales_amount])
+
+pre invoice deductions $ =[GS $]- [NIS $]
+post invoice deductions $ = SUM(fact_Actual_Estimates[post_inv_deductions_amount])
+
+post invoice other deductions $ =
+SUM(fact_Actual_Estimates[post_inv_other_deductions_amount])
+
+total post invoice deductions $ =
+[post invoice deductions $]+[post invoice other deductions $]
+
+NS $ = SUM(fact_Actual_Estimates[net_sales_amount])
+
+manufacturing cost $ = SUM(fact_Actual_Estimates[manufacturing_cost])
+
+freight cost $ = SUM(fact_Actual_Estimates[freight_cost])
+
+freight other cost $ =sum(fact_Actual_Estimates[freight_other_cost])
+
+total COGS $ = sum(fact_Actual_Estimates[total_cogs_amount])
+same, i use this:
+total COGS $ = [manufacturing cost $]+[freight cost $]+[freight other cost $]
+
+GM $= [NS $]- [total COGS $]
+
+GM %= DIVIDE([GM $]/ [NS $],0)
+qty = sum(fact_Actual_Estimates[qty])
+GM / unit = [GM $]/ [qty]
+
+GM / unit = DIVIDE( [GM $]/ [qty],0)
+NIS ind $=[NIS $]
+
+create table, copy n paste P&L Table Structure and
+name it P & L rows
+---------------------------------
+P & L values = 
+
+SWITCH(TRUE(),
+MAX('P & L rows'[Order])=1, [GS $]/1000000,
+MAX('P & L rows'[Order])=2, [pre invoice deductions $]/1000000,
+MAX('P & L rows'[Order])=3, [NIS $] /1000000,
+MAX('P & L rows'[Order])=4, [post invoice deductions $] /1000000,
+MAX('P & L rows'[Order])=5, [post invoice other deductions $]/1000000,
+MAX('P & L rows'[Order])=6, [total post invoice deductions $]/1000000,
+MAX('P & L rows'[Order])=7, [NS $] /1000000,
+MAX('P & L rows'[Order])=8, [manufacturing cost $]/1000000,
+MAX('P & L rows'[Order])=9, [Freight Cost $]/1000000,
+MAX('P & L rows'[Order])=10, [freight other cost $] /1000000,
+MAX('P & L rows'[Order])=11, [total COGS $] /1000000,
+MAX('P & L rows'[Order])=12, [GM $]/1000000,
+MAX('P & L rows'[Order])=13, [GM %]*100,
+MAX('P & L rows'[Order])=14, [GM / unit]
+)
+sort by order
+---------------------------------
+LY= CALCULATE([P & L values], 
+SAMEPERIODLASTYEAR('dim table'[date]))
+
+filter out 2023, slicer only til 2022
+
+fy_desc = IF(fiscal_year[fiscal_year] ="2022", "2022 EST", fiscal_year[fiscal_year])
+
+--------------------------------- Add column to fiscal_year table
+
+fy_desc = 
+
+var MAXDATE =
+CALCULATE(MAX(fiscal_year[fiscal_year]),
+ALL(fiscal_year[fiscal_year]))
+RETURN 
+IF(fiscal_year[fiscal_year] =MAXDATE, 
+MAXDATE &
+" EST", fiscal_year[fiscal_year])
+--------------------------------- create measures
+
+P & L LY= CALCULATE([P & L values], 
+SAMEPERIODLASTYEAR('dim table'[date]))
+
+P & L YoY Chg = [P & L values]-[P & L LY]
+P & L YoY Chg % = DIVIDE([P & L YoY Chg],[P & L LY],0)*100
+
+----------------------------- 
+modelling, new table
+----------------------------- 
+P & L columns = 
+var x =ALLNOBLANKROW(fiscal_year[fy_desc])
+return
+
+union(
+row("col header","LY"),
+row("col header","YoY"),
+row("col header","YoY %"),
+x
+)
+----------------------------- 
+P & L columns = 
+
+union(
+row("col header","LY"),
+row("col header","YoY"),
+row("col header","YoY %"),
+
+)
+----------------------------- 
+P & L final value = 
+SELECTEDVALUE(fiscal_year[fy_desc])
+
+-----------------------------
+P & L final value = 
+SWITCH(TRUE(),
+SELECTEDVALUE(fiscal_year[fy_desc])= 
+MAX('P & L columns'[col header]), [P & L values],
+
+MAX('P & L columns'[col header])="LY", [P & L LY],
+MAX('P & L columns'[col header])="YoY Chg", [P & L YoY Chg],
+MAX('P & L columns'[col header])="YoY Chg %", [P & L YoY Chg %]
+
+)
+
+-----------------------------
+drag P & L final value  to matrix under values
+rows - line item
+columns - col header
